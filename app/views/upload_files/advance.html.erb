@@ -1,0 +1,63 @@
+<h1>Rails AJAX File Upload - Advanced Demo</h1>
+<p>
+  This is a slightly more advanced demo of the plugin's features.<br />
+  Choose a file below and it will be uploaded without navigating away from this page.<br />
+  This demo makes use of the <code>onChange</code>, <code>onSubmit</code> and <code>onComplete</code> events fired by the plugin.
+</p>
+<form method="post" action="" enctype="multipart/form-data">
+  <div id="filelist"></div>
+  <label>File Input: <input type="file" name="file" id="fileUpload" /><span id="uploading"></span></label>
+</form>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+    var interval;
+
+    function applyAjaxFileUpload(element) {
+      $(element).AjaxFileUpload({
+        action: "/upload?foo=bar",
+        onChange: function(filename) {
+          var $uploading = $('#uploading')
+          $uploading.text("Uploading")
+
+          interval = window.setInterval(function() {
+            var text = $uploading.text();
+            if (text.length < 13) {
+              $uploading.text(text + ".");
+            } else {
+              $uploading.text("Uploading");
+            }
+          }, 200);
+        },
+        onSubmit: function(filename) {
+          return true;
+        },
+        onComplete: function(filename, response) {
+          window.clearInterval(interval);
+          var $filelist = $('#filelist');
+          var $fileInput = $('#fileUpload');
+
+          $filelist.append('<p id=' + response + '>'+ filename +'</p>');
+          $fileitem = $('#'+response)
+          $fileitem.attr('name','fileListId');
+          $('#uploading').remove();
+
+          if (typeof(response.error) === "string") {
+
+            applyAjaxFileUpload($fileInput);
+
+            alert(response.error);
+
+            return;
+          }
+
+          $("<a />").attr("href", "#").attr('id','remove'+response).attr('onClick','$(\'#\'+'+response+').remove();').text("x").appendTo($fileitem);
+        }
+      });
+    }
+
+    applyAjaxFileUpload("#fileUpload");
+  });
+
+</script>
